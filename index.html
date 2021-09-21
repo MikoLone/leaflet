@@ -22,7 +22,7 @@
         <div class="row">
             <div id="errorContainer" class="col d-none">
                 <div class="col">
-                    <div class="alert alert-danger">Error Container</div>
+                    <div class="alert alert-danger" data-bind="text: error"></div>
                 </div>
             </div>
         </div>
@@ -34,7 +34,7 @@
                     <div class="col wouldyou">Would you read this?</div>
                     <!-- /ko -->
 
-                    <!-- ko if: type() == "FILM" -->
+                    <!-- ko if:type() == "FILM" -->
                     <div class="col wouldyou">Would you watch this?</div>
                     <!-- /ko -->
                     
