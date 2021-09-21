@@ -1,0 +1,19 @@
+.mediaTitle{
+    font-size: 1.8em;
+    font-weight: bold;
+}
+
+.author{
+    color:gray;
+    font-size:1.2em;
+}
+
+.wouldyou{
+    font-size: 1.8em;
+    color:gray;
+    text-align: center;
+}
+
+.mediaimg {
+    max-height:400px;
+}

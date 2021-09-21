@@ -1,14 +1,8 @@
 /**
  * Leaflet app
  * 
- * {
-  "id": "1",
-  "title": "Mistborn: The Well of Ascension",
-  "author": "Brandon Sanderson",
-  "description": "Vin, the former street urchin and protege of Kelsier, is now heir to the Mistborn and the new world Kelsier created. When a mad race of giants attempt to take the former capital, Luthadel, Vin and her rebel allies must save the city and its hidden cache of allomancy metals from siege.",
-  "thumbnail": "https://www.syndetics.com/index.php?isbn=0765356139/lc.jpg&client=sirsi",
-  "type": "BOOK"
-}
+ * TODO make leaflet icon
+ * TODO get/make book/movie icon
  */
 var Leaflet = function (){
     var userId = "someidthatisastring",
@@ -16,14 +10,47 @@ var Leaflet = function (){
     nextItem = null;
 
     
-    /**
-     * error handling
-     * @param String message 
-     */
-    function handleErrors(errortype, message){
-        console.log(errortype, message);
-        //TODO display error page. Major Broken
-    }
+
+    var Messaging = function(){
+
+        var messages = {
+            "message":ko.observable("")
+            ,"error":ko.observable("")
+        };
+        /**
+         * error handling
+         * @param String message 
+         */
+        function handleErrors(errortype, message){
+            console.log(errortype, message);
+            
+            messages.error(message);
+        }
+
+        function displayMessage(msg, duration){
+            messages.message(msg);
+            document.getElementById("messages").classList.toggle("d-none");
+
+            if(duration > 0){
+                setTimeout(function(){
+                    document.getElementById("messages").classList.toggle("d-none");
+                }, 5000);
+            }
+            
+        }
+
+        function init(){
+            ko.applyBindings(messages, document.getElementById("messages"));
+            ko.applyBindings(messages, document.getElementById("errorContainer"));
+        }
+
+        return {
+            "handleErrors":handleErrors
+            ,"displayMessage":displayMessage
+            ,"init":init
+        }
+    }();
+    
 
 
     function getData(sendObj){
@@ -36,7 +63,7 @@ var Leaflet = function (){
         },sendSettings = {
             method: 'GET', // *GET, POST, PUT, DELETE, etc.
             mode: 'cors', // no-cors, *cors, same-origin
-            //cache: 'default', // *default, no-cache, reload, force-cache, only-if-cached
+            cache: 'default', // *default, no-cache, reload, force-cache, only-if-cached
             credentials: 'omit', // include, *same-origin, omit
             headers: {
               'Content-Type': 'application/json'
@@ -70,7 +97,7 @@ var Leaflet = function (){
 
         function checkendPoint(endpoint){
             if(!settings.endpoints.hasOwnProperty(endpoint)){
-                handleErrors("commsError", "Unknown Endppoint");
+                Messaging.handleErrors("commsError", "Unknown Endppoint");
                 return false;
             }
 
@@ -87,12 +114,15 @@ var Leaflet = function (){
         comms(sendObj).then(data => {
             processServerResponse(sendObj, data);
         }).catch((error) => {
-            handleErrors("commsError", error);
+            Messaging.handleErrors("commsError", error);
         });
         
     }
 
     function initKo(){
+
+        //TODO: create/download loading book thumbnail
+
         var initItem = {
             "author":"miguel"
             ,"description":"description" 
@@ -104,6 +134,8 @@ var Leaflet = function (){
 
         currentItem = createItem(initItem);
         ko.applyBindings(currentItem, document.getElementById("mediaCard"));
+
+        
     }
 
     function setNextItem(item){
@@ -158,6 +190,10 @@ var Leaflet = function (){
         
         getData({"endpoint":"item", "callback":processItem});
         getData({"endpoint":"item", "callback":setNextItem});
+
+
+        Messaging.init();
+        //Messaging.displayMessage("blah", 5000);
         
     }
 
