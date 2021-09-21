@@ -12,3 +12,5 @@ Clone the repository and cd into the leaflet folder and run the http-server comm
 > cd Documents\GitHub\leaflet
 
 > http-server
+
+To see it in action on the web. Visit https://main.d2raft45san663.amplifyapp.com/
