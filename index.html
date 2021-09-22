@@ -14,15 +14,15 @@
                  <h2> <img src="/img/leaflet.png"/> Leaflet</h2>
             </div>
         </div>
-        <div class="row">
-            <div id="messages" class="col d-none">
-                <div class="alert alert-primary" data-bind="text: message"></div>
+        <div id="messages">
+            <div class="row">
+                <div class="col" data-bind="foreach: message">
+                    <div class="alert alert-primary" data-bind="text: $data"></div>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div id="errorContainer" class="col d-none">
-                <div class="col">
-                    <div class="alert alert-danger" data-bind="text: error"></div>
+            <div class="row">
+                <div data-bind="foreach: error" class="col">
+                        <div class="alert alert-danger" data-bind="text: $data"></div>
                 </div>
             </div>
         </div>

@@ -1,16 +1,19 @@
 # leaflet
 
-To run leaflet locally, 
-Install Node.js and the http-server package by running the following command. 
+To run leaflet drop the contents of leaflet into a server document root.
 
-> npm install --global http-server
+Alternatively you can run it locally by installing the package included. The package will install http-server (https://www.npmjs.com/package/http-server). 
 
-or refer to their documentation at https://www.npmjs.com/package/http-server
+To do this.
 
-Clone the repository and cd into the leaflet folder and run the http-server command
+Install Node.js if not aldeady installed at https://nodejs.org/en/download/
 
-> cd Documents\GitHub\leaflet
+Clone the repository and run these commands
 
+`````
+> cd Path\To\leaflet
+> npm install 
 > http-server
+`````
 
 To see it in action on the web. Visit https://main.d2raft45san663.amplifyapp.com/
