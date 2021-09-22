@@ -1,5 +1,13 @@
 /**
- * Leaflet app
+ * Leaflet
+ * 
+ * Will display a media item and so that a user
+ * can rate it. 
+ * 
+ * 
+ * @see https://api.lib.byu.edu/leaflet/swagger-ui.html for service documenation.
+ * 
+ * Author Michael Hopkins
  */
 const Leaflet = function () {
 
@@ -52,7 +60,7 @@ const Leaflet = function () {
      * @param {*} message  the message you want display if it doesn't have an error type. if it is displayed this message is logged.
      * @param int duration the amount of time in miliseconds to show the message. null or 0 will show it forever.
      */
-    function handleErrors(message, errortype, duration) {
+    function handleErrors(message, errortype) {
         logError(errortype, message);
         let userMessage = "";
 
@@ -63,7 +71,6 @@ const Leaflet = function () {
         }
 
         messages.error.push(userMessage);
-        timeoutMessage(message.error, duration);
     }
     /**
      * If there was a message with a duration then this will execute that. 
@@ -141,7 +148,7 @@ const Leaflet = function () {
 
         //Make sure we are calling an known endpoint
         if (!settings.endpoints.hasOwnProperty(sendObj.endpoint)) {
-            handleErrors("commsError", "Unknown Endppoint");
+            handleErrors("Unknown Endppoint", "commsError");
             return;
         }
 
@@ -155,7 +162,7 @@ const Leaflet = function () {
             const response = await fetch(url, sendSettings);
             return response.json(); // parses JSON response into native JavaScript objects
         } catch (error) {
-            handleErrors("commsError", error);
+            handleErrors(error.message, "commsError");
         }
     }
 
