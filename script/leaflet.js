@@ -1,31 +1,37 @@
+// Maybe move all the strings to a resources.json file to show that you can get it ready for localization in the future.
+
 /**
  * Leaflet app
  * 
  */
-var Leaflet = function (){
+const Leaflet = function () {
+    // These variables are decalred very far from where they are used
     var userId = "someidthatisastring", //hard coded userId as per instructions
-    currentItem = null,//placeholder for the currentitem
-    nextItem = null;//holds the data for the next item
+        currentItem = null,//placeholder for the currentitem
+        nextItem = null;//holds the data for the next item
 
-    
+
     /**
      * Messages class for outputting messages and errors.
      * 
      */
-    var Messaging = function(){
+    // This singleton can probably be moved out and have the init called with the Leaflet init
+    var Messaging = function () {
         /**
          * Creats the KO observables for messages
          */
+        // This only allows for the most recent message to be shown.
         var messages = {
-            "message":ko.observable("")
-            ,"error":ko.observable("")
+            "message": ko.observable("")
+            , "error": ko.observable("")
         },
-        /**
-         * What the user should see when some errors happen. Other times it just what is sent. 
-         */
-        userMessages = {
-            "commsError":"We could not get the media from the server. We are on it. Please try again another time."
-        };
+            /**
+             * What the user should see when some errors happen. Other times it just what is sent. 
+             */
+            // This is only used once, might be better to just have the message inline.
+            userMessages = {
+                "commsError": "We could not get the media from the server. We are on it. Please try again another time."
+            };
         /**
          * Handles errors that come along. Displays errors on the page. and logs them but obviously only to the console
          * but a FUTURE would be to send them somewhere a developer would see them. 
@@ -34,16 +40,22 @@ var Leaflet = function (){
          * @param {*} message  the message you want display if it doesn't have an error type. if it is displayed this message is logged.
          * @param int duration the amount of time in miliseconds to show the message. null or 0 will show it forever.
          */
-        function handleErrors(errortype, message, duration){
+        function handleErrors(errortype, message, duration) {
+            // Move all console.log to a class where you can then move them to server side all at once, or disable in prod.
             console.log(errortype, message);
-
+            // Message is ignored if errorType is set to a valid value, this feels strange that the second parameter is worthless
+            // if the first parameter is passed in, normally I would expect the message to be optional, and used if passed in.
+            // something like userMessage = message || userMessages[errortype];
+            
+            // Typescript removes the need for a check like this.
             if(userMessages.hasOwnProperty(errortype )){
                 userMessage = userMessages[errortype];
-            }else{
+            } else {
                 userMessage = message;
             }
-
+            // You get this node when you bind, and every time you show a message, probably move to variable.
             var node = document.getElementById("errorContainer");
+            // See timeing issue comment in timeoutMessage
             node.classList.toggle("d-none");
 
             messages.error(userMessage);
@@ -55,15 +67,18 @@ var Leaflet = function (){
          * @param int duration time in miliseconds
          * @param DOMnode node the node of the display message container that needs to be toggled when durattion ends
          */
-        function timeoutMessage(duration, node){
-            if(node === null ){
+        function timeoutMessage(duration, node) {
+            // Duration is the first paramater here, everywhere else it is the last, change to be last in this case.
+            if (node === null) {
                 console.log("node is null timeout will be ignored");
                 return;
             }
 
-            if(duration > 0){
-                setTimeout(function(){
+            if (duration > 0) { 
+                // What happenns if this is called more than once within 5 seconds?
+                setTimeout(function () {
                     node.classList.toggle("d-none");
+                    // This is hard coded to 5000, what happened to duration?
                 }, 5000);
             }
         }
@@ -73,28 +88,30 @@ var Leaflet = function (){
          * @param String msg 
          * @param int duration time in milliseconds that the message should be displayed. 0 means it will display for ever. 
          */
-        function displayMessage(msg, duration){
+        function displayMessage(msg, duration) {
             messages.message(msg);
+            // Same as errorContainer, set to local variable.
             var node = document.getElementById("messages");
+            // Same timing issue as handleErrors
             node.classList.toggle("d-none");
             timeoutMessage(duration, node);
         }
         /**
          * Initializes the KO bindings for the messages
          */
-        function init(){
+        function init() {
             ko.applyBindings(messages, document.getElementById("messages"));
             ko.applyBindings(messages, document.getElementById("errorContainer"));
         }
 
-        
+        // Probably add a comment that these are the public methods
         return {
-            "handleErrors":handleErrors
-            ,"displayMessage":displayMessage
-            ,"init":init
+            "handleErrors": handleErrors
+            , "displayMessage": displayMessage
+            , "init": init
         }
     }();
-    
+
 
     /**
      * Handles grabbing the data from the server and handling the response and
@@ -113,34 +130,43 @@ var Leaflet = function (){
      * @param {*} sendObj 
      * @returns 
      */
-    function getData(sendObj){
+    // sendObj doesn't have a clear definition that shows it has callback as a parameter
+    // Make this function async, and lose the callback. Instead call await then call with the result. 
+    // If instead you want to use .then, do that pattern, I suggest async/await
+    function getData(sendObj) {
+        // This method is also used to rate items, I don't think that getData is the right name for that.
 
         /**
          * Sets up the endpoints and destination for the service
          */
+        // This never changes, move out of the function and to a const.
         var settings = {
-            "baseUrl":"https://api.lib.byu.edu/leaflet"
-            //"baseUrl":"https://example.com/leaflet"
-            ,"endpoints":{
-                "item":"/item"
-                ,"rate":"/users/" + userId + "/ratings"
+            "baseUrl": "https://api.lib.byu.edu/leaflet"
+            //"baseUrl":"https://example.com/leaflet" -- Remove this linse
+            , "endpoints": {
+                "item": "/item"
+                , "rate": "/users/" + userId + "/ratings"
             }
         }
-        /**
-         * These are the js Fetch settings. 
-         * @see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-         */
-        ,sendSettings = {
-            method: 'GET', // *GET, POST, PUT, DELETE, etc.
-            mode: 'cors', // no-cors, *cors, same-origin
-            cache: 'default', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'omit', // include, *same-origin, omit
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: null//TODO CHECK IF THIS WORKS
-        };
-        
+        // Leave out the parameters you set to the default. Also better witht he link to leave out the inline comments because the link
+        // will not get out of date, the inline comments might.
+            /**
+             * These are the js Fetch settings. 
+             * @see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+             */
+            , sendSettings = {
+                method: 'GET', // *GET, POST, PUT, DELETE, etc.
+                mode: 'cors', // no-cors, *cors, same-origin
+                cache: 'default', // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: 'omit', // include, *same-origin, omit
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: null//TODO CHECK IF THIS WORKS
+            };
+            // Remove TODO comments of this nature
+
+            // This is a duplicate comment to the start of getData
         /**
          * Write the fetch so that I can do the response.
          * data is the following 
@@ -152,10 +178,12 @@ var Leaflet = function (){
          *      }
          *  }
          */
-        async function comms(sendObj){
+        // Not sure the value in this function, it is called once in a function that declares it, break this out and put inline where comms is called
+        async function comms(sendObj) {
+            // Remove this TODO or do it. TODO in projects like this should be of a if this was a bigger project or had more methods I would have done x, y, z instead
             //TODO make endpoints a STATIC
             var url = settings.baseUrl + settings.endpoints[sendObj.endpoint];
-            if(sendObj.endpoint !== "item"){
+            if (sendObj.endpoint !== "item") {
                 sendSettings.body = JSON.stringify(sendObj.data);
                 sendSettings.method = "POST";
             }
@@ -164,8 +192,9 @@ var Leaflet = function (){
             return response.json(); // parses JSON response into native JavaScript objects
         }
 
-        function checkendPoint(endpoint){
-            if(!settings.endpoints.hasOwnProperty(endpoint)){
+        // Same comment as the function above, used once in the function it is called, just make it inline, fix spelling
+        function checkendPoint(endpoint) {
+            if (!settings.endpoints.hasOwnProperty(endpoint)) {
                 Messaging.handleErrors("commsError", "Unknown Endppoint");
                 return false;
             }
@@ -174,16 +203,19 @@ var Leaflet = function (){
         }
 
 
-        if(!checkendPoint(sendObj.endpoint)){
+        if (!checkendPoint(sendObj.endpoint)) {
             return;
         }
 
+        // You used await above, try to stick to either async/await or .then, mixing is not the right way
         comms(sendObj).then(data => {
+            // Strange to call this method in Leaflet from the ajax code, too much inner knowledge here
             processServerResponse(sendObj, data);
         }).catch((error) => {
+            // error is an object here and is being sent in the string message parameter but is ignored, so you wouldn't catch this
             Messaging.handleErrors("commsError", error);
         });
-        
+
     }
     /**
      * Initializes the Knockout Binding for the Items
@@ -191,27 +223,28 @@ var Leaflet = function (){
      * error on the server.
      * 
      */
-    function initItemKo(){
-
+    function initItemKo() {
+        // Why not just set current item to these values at the start?
         var initItem = {
-            "author":"Michael J Fox"
-            ,"description":"There was a problem on the server" 
-            ,"id": "someid"
-            ,"thumbnail":"/img/backtothefuture.jpg"
-            ,"title":"Back to the Future"
-            ,"type":"FILM"
+            "author": "Michael J Fox"
+            , "description": "There was a problem on the server"
+            , "id": "someid"
+            , "thumbnail": "/img/backtothefuture.jpg"
+            , "title": "Back to the Future"
+            , "type": "FILM"
         };
-
+        // This is only used here, could just create with ko.observable("<value>") and delete this method
         currentItem = createItem(initItem);
         ko.applyBindings(currentItem, document.getElementById("mediaCard"));
-       
+
     }
     /**
      * Caches the next item so use doesn't have to wait. 
      * 
      * @param {*} item @see Item model on https://api.lib.byu.edu/leaflet/swagger-ui.html
      */
-    function setNextItem(item){
+    // I might move these to be inline and have a TODO saying that if needed move them out to be functions, but from agile you start simple.
+    function setNextItem(item) {
         nextItem = item;
     }
     /**
@@ -219,10 +252,11 @@ var Leaflet = function (){
      * 
      * @param {*} item 
      */
-    function processItem(item){
+    // Same comment as above
+    function processItem(item) {
         updateCurrentItem(item);
     }
-    
+
     /**
      * Little helper function that
      * Sets up the default item knockout bindings for the UI.
@@ -230,14 +264,14 @@ var Leaflet = function (){
      * @param {*} item @see Item model on https://api.lib.byu.edu/leaflet/swagger-ui.html
      * @returns Item as KO observables.
      */
-    function createItem(item){
+    function createItem(item) {
         return {
             "author": ko.observable(item.author)
-            ,"description": ko.observable(item.description)
-            ,"id": ko.observable(item.id)
-            ,"thumbnail": ko.observable(item.thumbnail)
-            ,"title": ko.observable(item.title)
-            ,"type": ko.observable(item.type)
+            , "description": ko.observable(item.description)
+            , "id": ko.observable(item.id)
+            , "thumbnail": ko.observable(item.thumbnail)
+            , "title": ko.observable(item.title)
+            , "type": ko.observable(item.type)
         }
     }
     /**
@@ -245,22 +279,23 @@ var Leaflet = function (){
      * 
      * @param {*} item @see item model on https://api.lib.byu.edu/leaflet/swagger-ui.html
      */
-    function updateCurrentItem(item){
+    function updateCurrentItem(item) {
         currentItem.author(item.author)
-        .description(item.description)
-        .id(item.id)
-        .thumbnail(item.thumbnail)
-        .title(item.title)
-        .type(item.type)
+            .description(item.description)
+            .id(item.id)
+            .thumbnail(item.thumbnail)
+            .title(item.title)
+            .type(item.type)
     }
     /**
      * Displays the thank you message and processing
      * the next item and gets a new one from the service.
      */
-    function handleRating(){ 
+    function handleRating() {
+        // Move 3000 to a constant
         Messaging.displayMessage("Thank you for rating", 3000);
         processItem(nextItem);
-        getData({"endpoint":"item", "callback":setNextItem});
+        getData({ "endpoint": "item", "callback": setNextItem });
     }
     /**
      * Processes the responses from the service. Handles 
@@ -273,10 +308,11 @@ var Leaflet = function (){
      * @param {*} sendObj 
      * @param {*} data 
      */
-    function processServerResponse(sendObj, data){
-        if(sendObj.endpoint === "item"){
-            sendObj.callback(data);            
-        }else if(sendObj.endpoint === "rate"){
+    // This shouldn't exist in this context, either it is part of getData, or doesn't exist. (shouldn't exist)
+    function processServerResponse(sendObj, data) {
+        if (sendObj.endpoint === "item") {
+            sendObj.callback(data);
+        } else if (sendObj.endpoint === "rate") {
             handleRating(data);
         }
     }
@@ -285,13 +321,13 @@ var Leaflet = function (){
      * messeging system. Then it retrieves the first 2 media items 
      * from the service. 
      */
-    function init(){
+    function init() {
         initItemKo();
         Messaging.init();
 
-        getData({"endpoint":"item", "callback":processItem});
-        getData({"endpoint":"item", "callback":setNextItem});
-        
+        getData({ "endpoint": "item", "callback": processItem });
+        getData({ "endpoint": "item", "callback": setNextItem });
+        // Remove test code
         //Messaging.displayMessage("blah", 5000);
         //Messaging.handleErrors("", "display the error", 5000);
     }
@@ -301,21 +337,24 @@ var Leaflet = function (){
      * 
      * @param boolean wouldread 
      */
-    function rateProcess(wouldread){
+    // NIT: movies are included, wouldread (should be wouldRead) should be approve or something like that.
+    function rateProcess(wouldread) {
         var data = {
-            "rating":wouldread
-            ,"itemId":currentItem.id()
+            "rating": wouldread
+            , "itemId": currentItem.id()
         };
-
-        getData({"endpoint":"rate", "data": data});
+        // Without reading the whole flow it is not clear that this ends in processServerResponse 
+        // with a handleRating call. Should be more clear the logic flow here
+        getData({ "endpoint": "rate", "data": data });
     }
-
+    // Comment that these are the public methods
     return {
-        "rate":rateProcess
-        ,"init":init
+        // Don't like renaming the function unless it adds clarity for callers and the internal one has a better name for inside the class
+        "rate": rateProcess
+        , "init": init
     }
 }();
 
-window.onload = function (){
+window.onload = function () {
     Leaflet.init();
 }

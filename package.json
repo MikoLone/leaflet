@@ -1,0 +1,15 @@
+{
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MikoLone/leaflet"
+  },
+  "description": "A demo leaflet project",
+  "requires": true,
+  "lockfileVersion": 1,
+  "devDependencies": {
+    "@types/knockout": "3.4.66"
+  },
+  "dependencies": {
+    "http-server": "13.0.2"
+  }
+}

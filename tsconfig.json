@@ -1,0 +1,15 @@
+{
+  "compileOnSave": true,
+  "include": [
+    "**/*"
+  ],
+  "compilerOptions": {
+    "lib": [ "dom","es6","dom.iterable","scripthost"],
+    "strict": true,
+    "baseUrl": "./",
+    "outDir": "output",
+    "outFile": "output/main.js",
+    "target": "es6",
+    "removeComments": true,
+  }
+}
