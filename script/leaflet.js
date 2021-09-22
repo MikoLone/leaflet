@@ -1,30 +1,31 @@
 /**
  * Leaflet app
- * 
+ * TODO use let and const instead of var
  */
-var Leaflet = function (){
-    var userId = "someidthatisastring", //hard coded userId as per instructions
-    currentItem = null,//placeholder for the currentitem
-    nextItem = null;//holds the data for the next item
+const Leaflet = function () {
+    const userId = "someidthatisastring"; //hard coded userId as per instructions
+    let currentItem = null;//placeholder for the currentitem
+    let nextItem = null;//holds the data for the next item
 
-    
+
     /**
      * Messages class for outputting messages and errors.
      * 
      */
-    var Messaging = function(){
+    const Messaging = function () {
         /**
          * Creats the KO observables for messages
          */
-        var messages = {
-            "message":ko.observable("")
-            ,"error":ko.observable("")
-        },
+        let messages = {
+            "message": ko.observable("")
+            , "error": ko.observable("")
+        };
+
         /**
          * What the user should see when some errors happen. Other times it just what is sent. 
          */
-        userMessages = {
-            "commsError":"We could not get the media from the server. We are on it. Please try again another time."
+        const userMessages = {
+            "commsError": "We could not get the media from the server. We are on it. Please try again another time."
         };
         /**
          * Handles errors that come along. Displays errors on the page. and logs them but obviously only to the console
@@ -34,16 +35,16 @@ var Leaflet = function (){
          * @param {*} message  the message you want display if it doesn't have an error type. if it is displayed this message is logged.
          * @param int duration the amount of time in miliseconds to show the message. null or 0 will show it forever.
          */
-        function handleErrors(errortype, message, duration){
+        function handleErrors(errortype, message, duration) {
             console.log(errortype, message);
 
-            if(userMessages.hasOwnProperty(errortype )){
+            if (userMessages.hasOwnProperty(errortype)) {
                 userMessage = userMessages[errortype];
-            }else{
+            } else {
                 userMessage = message;
             }
 
-            var node = document.getElementById("errorContainer");
+            let node = document.getElementById("errorContainer");
             node.classList.toggle("d-none");
 
             messages.error(userMessage);
@@ -55,16 +56,16 @@ var Leaflet = function (){
          * @param int duration time in miliseconds
          * @param DOMnode node the node of the display message container that needs to be toggled when durattion ends
          */
-        function timeoutMessage(duration, node){
-            if(node === null ){
+        function timeoutMessage(duration, node) {
+            if (node === null) {
                 console.log("node is null timeout will be ignored");
                 return;
             }
 
-            if(duration > 0){
-                setTimeout(function(){
+            if (duration > 0) {
+                setTimeout(function () {
                     node.classList.toggle("d-none");
-                }, 5000);
+                }, duration);
             }
         }
         /**
@@ -73,7 +74,7 @@ var Leaflet = function (){
          * @param String msg 
          * @param int duration time in milliseconds that the message should be displayed. 0 means it will display for ever. 
          */
-        function displayMessage(msg, duration){
+        function displayMessage(msg, duration) {
             messages.message(msg);
             var node = document.getElementById("messages");
             node.classList.toggle("d-none");
@@ -82,19 +83,19 @@ var Leaflet = function (){
         /**
          * Initializes the KO bindings for the messages
          */
-        function init(){
+        function init() {
             ko.applyBindings(messages, document.getElementById("messages"));
             ko.applyBindings(messages, document.getElementById("errorContainer"));
         }
 
-        
+
         return {
-            "handleErrors":handleErrors
-            ,"displayMessage":displayMessage
-            ,"init":init
+            "handleErrors": handleErrors
+            , "displayMessage": displayMessage
+            , "init": init
         }
     }();
-    
+
 
     /**
      * Handles grabbing the data from the server and handling the response and
@@ -113,34 +114,34 @@ var Leaflet = function (){
      * @param {*} sendObj 
      * @returns 
      */
-    function getData(sendObj){
+    function getData(sendObj) {
 
         /**
          * Sets up the endpoints and destination for the service
          */
-        var settings = {
-            "baseUrl":"https://api.lib.byu.edu/leaflet"
+        const settings = {
+            "baseUrl": "https://api.lib.byu.edu/leaflet"
             //"baseUrl":"https://example.com/leaflet"
-            ,"endpoints":{
-                "item":"/item"
-                ,"rate":"/users/" + userId + "/ratings"
+            , "endpoints": {
+                "item": "/item"
+                , "rate": "/users/" + userId + "/ratings"
             }
-        }
+        };
         /**
          * These are the js Fetch settings. 
          * @see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
          */
-        ,sendSettings = {
+        let sendSettings = {
             method: 'GET', // *GET, POST, PUT, DELETE, etc.
             mode: 'cors', // no-cors, *cors, same-origin
             cache: 'default', // *default, no-cache, reload, force-cache, only-if-cached
             credentials: 'omit', // include, *same-origin, omit
             headers: {
-              'Content-Type': 'application/json'
+                'Content-Type': 'application/json'
             },
-            body: null//TODO CHECK IF THIS WORKS
+            body: null
         };
-        
+
         /**
          * Write the fetch so that I can do the response.
          * data is the following 
@@ -152,10 +153,10 @@ var Leaflet = function (){
          *      }
          *  }
          */
-        async function comms(sendObj){
+        async function comms(sendObj) {
             //TODO make endpoints a STATIC
-            var url = settings.baseUrl + settings.endpoints[sendObj.endpoint];
-            if(sendObj.endpoint !== "item"){
+            const url = settings.baseUrl + settings.endpoints[sendObj.endpoint];
+            if (sendObj.endpoint !== "item") {
                 sendSettings.body = JSON.stringify(sendObj.data);
                 sendSettings.method = "POST";
             }
@@ -164,8 +165,8 @@ var Leaflet = function (){
             return response.json(); // parses JSON response into native JavaScript objects
         }
 
-        function checkendPoint(endpoint){
-            if(!settings.endpoints.hasOwnProperty(endpoint)){
+        function checkendPoint(endpoint) {
+            if (!settings.endpoints.hasOwnProperty(endpoint)) {
                 Messaging.handleErrors("commsError", "Unknown Endppoint");
                 return false;
             }
@@ -174,7 +175,7 @@ var Leaflet = function (){
         }
 
 
-        if(!checkendPoint(sendObj.endpoint)){
+        if (!checkendPoint(sendObj.endpoint)) {
             return;
         }
 
@@ -183,7 +184,7 @@ var Leaflet = function (){
         }).catch((error) => {
             Messaging.handleErrors("commsError", error);
         });
-        
+
     }
     /**
      * Initializes the Knockout Binding for the Items
@@ -191,27 +192,27 @@ var Leaflet = function (){
      * error on the server.
      * 
      */
-    function initItemKo(){
+    function initItemKo() {
 
-        var initItem = {
-            "author":"Michael J Fox"
-            ,"description":"There was a problem on the server" 
-            ,"id": "someid"
-            ,"thumbnail":"/img/backtothefuture.jpg"
-            ,"title":"Back to the Future"
-            ,"type":"FILM"
+        let initItem = {
+            "author": "Michael J Fox"
+            , "description": "There was a problem on the server"
+            , "id": "someid"
+            , "thumbnail": "/img/backtothefuture.jpg"
+            , "title": "Back to the Future"
+            , "type": "FILM"
         };
 
         currentItem = createItem(initItem);
         ko.applyBindings(currentItem, document.getElementById("mediaCard"));
-       
+
     }
     /**
      * Caches the next item so use doesn't have to wait. 
      * 
      * @param {*} item @see Item model on https://api.lib.byu.edu/leaflet/swagger-ui.html
      */
-    function setNextItem(item){
+    function setNextItem(item) {
         nextItem = item;
     }
     /**
@@ -219,10 +220,10 @@ var Leaflet = function (){
      * 
      * @param {*} item 
      */
-    function processItem(item){
+    function processItem(item) {
         updateCurrentItem(item);
     }
-    
+
     /**
      * Little helper function that
      * Sets up the default item knockout bindings for the UI.
@@ -230,14 +231,14 @@ var Leaflet = function (){
      * @param {*} item @see Item model on https://api.lib.byu.edu/leaflet/swagger-ui.html
      * @returns Item as KO observables.
      */
-    function createItem(item){
+    function createItem(item) {
         return {
             "author": ko.observable(item.author)
-            ,"description": ko.observable(item.description)
-            ,"id": ko.observable(item.id)
-            ,"thumbnail": ko.observable(item.thumbnail)
-            ,"title": ko.observable(item.title)
-            ,"type": ko.observable(item.type)
+            , "description": ko.observable(item.description)
+            , "id": ko.observable(item.id)
+            , "thumbnail": ko.observable(item.thumbnail)
+            , "title": ko.observable(item.title)
+            , "type": ko.observable(item.type)
         }
     }
     /**
@@ -245,22 +246,22 @@ var Leaflet = function (){
      * 
      * @param {*} item @see item model on https://api.lib.byu.edu/leaflet/swagger-ui.html
      */
-    function updateCurrentItem(item){
+    function updateCurrentItem(item) {
         currentItem.author(item.author)
-        .description(item.description)
-        .id(item.id)
-        .thumbnail(item.thumbnail)
-        .title(item.title)
-        .type(item.type)
+            .description(item.description)
+            .id(item.id)
+            .thumbnail(item.thumbnail)
+            .title(item.title)
+            .type(item.type)
     }
     /**
      * Displays the thank you message and processing
      * the next item and gets a new one from the service.
      */
-    function handleRating(){ 
+    function handleRating() {
         Messaging.displayMessage("Thank you for rating", 3000);
         processItem(nextItem);
-        getData({"endpoint":"item", "callback":setNextItem});
+        getData({ "endpoint": "item", "callback": setNextItem });
     }
     /**
      * Processes the responses from the service. Handles 
@@ -273,10 +274,10 @@ var Leaflet = function (){
      * @param {*} sendObj 
      * @param {*} data 
      */
-    function processServerResponse(sendObj, data){
-        if(sendObj.endpoint === "item"){
-            sendObj.callback(data);            
-        }else if(sendObj.endpoint === "rate"){
+    function processServerResponse(sendObj, data) {
+        if (sendObj.endpoint === "item") {
+            sendObj.callback(data);
+        } else if (sendObj.endpoint === "rate") {
             handleRating(data);
         }
     }
@@ -285,13 +286,13 @@ var Leaflet = function (){
      * messeging system. Then it retrieves the first 2 media items 
      * from the service. 
      */
-    function init(){
+    function init() {
         initItemKo();
         Messaging.init();
 
-        getData({"endpoint":"item", "callback":processItem});
-        getData({"endpoint":"item", "callback":setNextItem});
-        
+        getData({ "endpoint": "item", "callback": processItem });
+        getData({ "endpoint": "item", "callback": setNextItem });
+
         //Messaging.displayMessage("blah", 5000);
         //Messaging.handleErrors("", "display the error", 5000);
     }
@@ -301,21 +302,21 @@ var Leaflet = function (){
      * 
      * @param boolean wouldread 
      */
-    function rateProcess(wouldread){
-        var data = {
-            "rating":wouldread
-            ,"itemId":currentItem.id()
+    function rateProcess(wouldread) {
+        const data = {
+            "rating": wouldread
+            , "itemId": currentItem.id()
         };
 
-        getData({"endpoint":"rate", "data": data});
+        getData({ "endpoint": "rate", "data": data });
     }
 
     return {
-        "rate":rateProcess
-        ,"init":init
+        "rate": rateProcess
+        , "init": init
     }
 }();
 
-window.onload = function (){
+window.onload = function () {
     Leaflet.init();
-}
+};
